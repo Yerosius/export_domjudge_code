@@ -6,7 +6,6 @@ import sys
 import tempfile
 import zipfile
 import shutil
-import getpass
 import mysql.connector
 from tqdm import tqdm
 import pwinput
@@ -63,11 +62,16 @@ def export_submissions(rows, temp_dir):
         team = row['teamid']
         problem = row['probid']
         submitid = row['submitid']
-        filename = row['filename'] if row['filename'] else f"{submitid}.{LANG_EXT.get(lang,'txt')}"
+
+        filename = row['filename'] or "submission"
+        name, ext = os.path.splitext(filename)
+        if not ext:
+            ext = f".{LANG_EXT.get(lang, 'txt')}"
+        final_filename = f"{name}_{submitid}{ext}"
 
         dir_path = os.path.join(temp_dir, lang, f"team_{team}", f"problem_{problem}")
         os.makedirs(dir_path, exist_ok=True)
-        file_path = os.path.join(dir_path, filename)
+        file_path = os.path.join(dir_path, final_filename)
 
         with open(file_path, "wb") as f:
             f.write(row['sourcecode'])
